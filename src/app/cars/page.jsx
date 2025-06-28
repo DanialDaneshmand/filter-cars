@@ -1,5 +1,6 @@
 "use client";
 import CarCard from "@/components/CarCard";
+import Loading from "@/components/Loading";
 import SelectComp from "@/components/SelectComp";
 import axios from "axios";
 
@@ -18,15 +19,22 @@ const CarList = () => {
   const [modelFilterValue, setModelFilterValue] = useState("");
   const [modelYearFilterValue, setModelYearFilterValue] = useState("");
   const [doorFilterValue, setDoorFilterValue] = useState("");
-
+  const [bodyStyleLabel, setBodyStyleLabel] = useState("Body Style");
+  const [makesLabel, setMakesLabel] = useState("Make");
+  const [modelLabel, setModelLabel] = useState("Model");
+  const [modelYearLabel, setModelYearLabel] = useState("Model Year");
+  const [doorsLabel, setDoorsLabel] = useState("Doors");
+  const [isLoading, setIsLoading] = useState(false);
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setIsLoading(true);
         const {
           data: { midVehicleDealerships },
         } = await axios.get(
           "https://api.hillzusers.com/api/dealership/vehicles/localhost:3000"
         );
+        setIsLoading(false);
         setCarList(midVehicleDealerships);
         setFilteredData(midVehicleDealerships);
 
@@ -57,39 +65,16 @@ const CarList = () => {
         const doors = midVehicleDealerships.map((item) => item.Vehicle.doors);
         const uniqueSetDoor = new Set(doors);
         setUniqueDoor(Array.from(uniqueSetDoor));
+        console.log(uniqueSetDoor);
       } catch (error) {
         console.log(error);
+        setIsLoading(false);
       }
     };
     fetchData();
-    // استخراج مقادیر make
   }, []);
 
-  const handleChange = (e, label) => {
-    switch (label) {
-      case "Body Style": {
-        return setBodyStyleFilterValue(e.target.value);
-      }
-      case "Make": {
-        return setMakesFilterValue(e.target.value);
-      }
-      case "Model": {
-        return setModelFilterValue(e.target.value);
-      }
-      case "Model Year": {
-        return setModelYearFilterValue(e.target.value);
-      }
-      case "Doors": {
-        return setDoorFilterValue(e.target.value);
-      }
-
-      default:
-        break;
-    }
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  useEffect(() => {
     const filteredList = carList.filter((item) => {
       if (
         bodyStyleFilterValue &&
@@ -115,7 +100,74 @@ const CarList = () => {
       return true;
     });
     setFilteredData(filteredList);
+  }, [
+    bodyStyleFilterValue,
+    makesFilterValue,
+    modelFilterValue,
+    modelYearFilterValue,
+    doorFilterValue,
+  ]);
+
+  const handleChange = (e, label) => {
+    // switch (label) {
+    //   case "Body Style": {
+    //     return setBodyStyleFilterValue(e.target.value);
+    //   }
+    //   case "Make": {
+    //     return setMakesFilterValue(e.target.value);
+    //   }
+    //   case "Model": {
+    //     return setModelFilterValue(e.target.value);
+    //   }
+    //   case "Model Year": {
+    //     return setModelYearFilterValue(e.target.value);
+    //   }
+    //   case "Doors": {
+    //     return setDoorFilterValue(e.target.value);
+    //   }
+
+    //   default
+
+    // }
+    if (label === "Body Style") {
+      setBodyStyleFilterValue((prevState) => (prevState = e.target.value));
+      setBodyStyleLabel(e.target.value);
+    }
+    if (label === "Make") {
+      setMakesFilterValue((prevState) => (prevState = e.target.value));
+      setMakesLabel(e.target.value);
+    }
+    if (label === "Model") {
+      setModelFilterValue((prevState) => (prevState = e.target.value));
+      setModelLabel(e.target.value);
+    }
+    if (label === "Model Year") {
+      setModelYearFilterValue((prevState) => (prevState = e.target.value));
+      setModelYearLabel(e.target.value);
+    }
+    if (label === "Doors") {
+      setBodyStyleFilterValue((prevState) => (prevState = e.target.value));
+      setDoorsLabel(e.target.value);
+    }
   };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setBodyStyleFilterValue("");
+    setDoorFilterValue("");
+    setMakesFilterValue("");
+    setModelFilterValue("");
+    setModelYearFilterValue("");
+    setBodyStyleLabel("Body Style");
+    setMakesLabel("make");
+    setModelLabel("Model");
+    setModelYearLabel("Model Year");
+    setDoorsLabel("Doors");
+  };
+
+  if (isLoading){
+    return <Loading/>
+  }
 
   return (
     <div>
@@ -126,7 +178,7 @@ const CarList = () => {
           </div>
           <form onSubmit={handleSubmit}>
             <SelectComp
-              label="Body Style"
+              label={bodyStyleLabel}
               onChange={handleChange}
               arr={uniqueBodyStyle}
             />
@@ -168,7 +220,7 @@ const CarList = () => {
               imageUrl={`https://image123.azureedge.net${item.cover_image}`}
               manufactureYear={item.Vehicle.model_year}
               model={item.Vehicle.model}
-              vehicleType="benz"
+              vehicleType={item.Vehicle.make}
             />
           ))}
         </div>
@@ -178,98 +230,3 @@ const CarList = () => {
 };
 
 export default CarList;
-
-// import React, { useState } from 'react';
-
-// function VehicleFilter() {
-//   const [vehicleList, setVehicleList] = useState([
-//     {
-//       Vehicle: {
-//         body_style: "sedan",
-//         doors: 4,
-//         make: "Toyota",
-//         model: "Camry",
-//         model_year: 2020
-//       }
-//     },
-//     {
-//       Vehicle: {
-//         body_style: "SUV",
-//         doors: 5,
-//         make: "Honda",
-//         model: "CR-V",
-//         model_year: 2021
-//       }
-//     },
-//     {
-//       Vehicle: {
-//         body_style: "coupe",
-//         doors: 2,
-//         make: "BMW",
-//         model: "M4",
-//         model_year: 2019
-//       }
-//     }
-//   ]);
-
-//   // استیت‌های فیلتر
-//   const [filterBodyStyle, setFilterBodyStyle] = useState(''); // مثلا "sedan"
-//   const [filterMake, setFilterMake] = useState(''); // مثلا "Toyota"
-
-//   // تابع برای فیلتر کردن لیست
-//   const handleFilter = () => {
-//     const filteredList = vehicleList.filter(item => {
-//       // اگر مقدار فیلتر خالی است، فایده ای ندارد، پس برنمی‌گرداند
-//       if (filterBodyStyle && item.Vehicle.body_style !== filterBodyStyle) {
-//         return false;
-//       }
-//       if (filterMake && item.Vehicle.make !== filterMake) {
-//         return false;
-//       }
-//       return true;
-//     });
-//     setVehicleList(filteredList);
-//   };
-
-//   // تابع برای بازگرداندن لیست اولیه یا پاک کردن فیلتر
-//   const handleReset = () => {
-//     // درواقع باید آرایه اولیه رو برگردونی، پس بهتر است آرایه اولیه رو نگه داریم
-//     // این کار را با داشتن آرایه کامل (قبل از فیلتر) ممکن می‌کنیم
-//   };
-
-//   return (
-//     <div>
-//       <h2>فیلتر خودروها</h2>
-
-//       {/* ورودی فیلتر بر اساس body_style */}
-//       <input
-//         type="text"
-//         placeholder="نوع بدنه (مثلاً sedan)"
-//         value={filterBodyStyle}
-//         onChange={(e) => setFilterBodyStyle(e.target.value)}
-//       />
-
-//       {/* ورودی فیلتر بر اساس make */}
-//       <input
-//         type="text"
-//         placeholder="سازنده"
-//         value={filterMake}
-//         onChange={(e) => setFilterMake(e.target.value)}
-//       />
-
-//       {/* دکمه فیلتر */}
-//       <button onClick={handleFilter}>فیلتر کنید</button>
-
-//       {/* مثلا، دکمه ریست کردن */}
-//       {/* اگر می‌خواهی لیست رو به حالت اولیه برگردونی، باید آرایه کامل رو یه استیت دیگه ذخیره کنی */}
-
-//       {vehicleList.map((item, index) => (
-//         <div key={index}>
-//           {item.Vehicle.body_style} | {item.Vehicle.make} | {item.Vehicle.model} | {item.Vehicle.model_year}
-//         </div>
-//       ))}
-//     </div>
-//   );
-// }
-
-// export default VehicleFilter;
